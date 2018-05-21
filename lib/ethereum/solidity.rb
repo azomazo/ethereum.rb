@@ -17,9 +17,9 @@ module Ethereum
       @args = "--bin --abi --optimize"
     end
 
-    def compile(filename)
+    def compile(filename, libraries = {})
       result = {}
-      execute_solc(filename).scan(OUTPUT_REGEXP).each do |match|
+      execute_solc(filename, libraries).scan(OUTPUT_REGEXP).each do |match|
         _file, name, bin, abi = match
         result[name] = {}
         result[name]["abi"] = abi
@@ -29,12 +29,22 @@ module Ethereum
     end
 
     private
-      def execute_solc(filename)
-        cmd = "#{@bin_path} #{@args} '#{filename}'"
+      def execute_solc(filename, libraries = {})
+        cmd = "#{@bin_path} #{@args} #{generate_libraries_args(libraries)} '#{filename}'"
         out, stderr, status = Open3.capture3(cmd)
         raise SystemCallError, "Unanable to run solc compliers" if status.exitstatus == 127
         raise CompilationError, stderr unless status.exitstatus == 0
         out
+      end
+
+      def generate_libraries_args(libraries = {})
+        return '' if libraries.empty?
+        result = []
+        formatter = Formatter.new
+        libraries.each do |name, address|
+          result << "#{name}:#{formatter.to_address(address)}"
+        end
+        "--libraries #{result.join(',')}"
       end
   end
 end
