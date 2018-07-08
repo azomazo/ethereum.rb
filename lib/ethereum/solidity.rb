@@ -19,7 +19,7 @@ module Ethereum
 
     def compile(filename, libraries = {}, allow_paths = [])
       result = {}
-      execute_solc(filename, libraries).scan(OUTPUT_REGEXP).each do |match|
+      execute_solc(filename, libraries, allow_paths).scan(OUTPUT_REGEXP).each do |match|
         _file, name, bin, abi = match
         result[name] = {}
         result[name]["abi"] = abi
