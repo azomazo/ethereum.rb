@@ -52,10 +52,10 @@ module Ethereum
     #
     # @return [Ethereum::Contract] Returns a contract wrapper.
 
-    def self.create(file: nil, client: Ethereum::Singleton.instance, code: nil, abi: nil, address: nil, name: nil, contract_index: nil, truffle: nil, libraries: {})
+    def self.create(file: nil, client: Ethereum::Singleton.instance, code: nil, abi: nil, address: nil, name: nil, contract_index: nil, truffle: nil, libraries: {}, allow_paths: [])
       contract = nil
       if file.present?
-        contracts = Ethereum::Initializer.new(file, client, libraries).build_all
+        contracts = Ethereum::Initializer.new(file, client, libraries, allow_paths).build_all
         raise "No contracts compiled" if contracts.empty?
         if contract_index
           contract = contracts[contract_index].class_object.new
