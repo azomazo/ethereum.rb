@@ -30,12 +30,13 @@ module Ethereum
 
     private
       def execute_solc(filename, libraries = {}, allow_paths = [])
-        cmd = "#{@bin_path} #{@args} #{generate_libraries_args(libraries)} #{generate_allow_paths(allow_paths)}'#{filename}'"
+        cmd = "#{@bin_path} #{@args} #{generate_libraries_args(libraries)} #{generate_allow_paths(allow_paths)} '#{filename}'"
         out, stderr, status = Open3.capture3(cmd)
         raise SystemCallError, "Unanable to run solc compliers" if status.exitstatus == 127
         raise CompilationError, stderr unless status.exitstatus == 0
         out
       end
+
 
       def generate_libraries_args(libraries = {})
         return '' if libraries.empty?
