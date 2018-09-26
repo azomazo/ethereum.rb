@@ -11,6 +11,8 @@ module Ethereum
     attr_accessor :call_raw_proxy, :call_proxy, :encode_tx_proxy, :transact_proxy, :transact_and_wait_proxy
     attr_accessor :new_filter_proxy, :get_filter_logs_proxy, :get_filter_change_proxy
 
+    attr_accessor :srcmap_runtime
+
     def initialize(name, code, abi, client = Ethereum::Singleton.instance)
       @name = name
       @code = code
