@@ -10,7 +10,7 @@ module Ethereum
 
       @contracts = []
       contracts.each do |contract|
-        abi = JSON.parse(sol_output[contract]["abi"] )
+        abi = sol_output[contract]["abi"]
         name = contract
         code = sol_output[contract]["bin"]
         @contracts << Contract.new(name, code, abi, @client)

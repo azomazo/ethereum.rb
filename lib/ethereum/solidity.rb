@@ -1,5 +1,6 @@
 require 'tmpdir'
 require 'open3'
+require 'json'
 
 module Ethereum
   class CompilationError < StandardError;
@@ -10,27 +11,32 @@ module Ethereum
 
   class Solidity
 
-    OUTPUT_REGEXP = /======= (\S*):(\S*) =======\s*Binary:\s*(\S*)\s*Contract JSON ABI\s*(\S*)/
-
     def initialize(bin_path = "solc")
       @bin_path = bin_path
-      @args = "--bin --abi --optimize"
     end
 
     def compile(filename)
       result = {}
-      execute_solc(filename).scan(OUTPUT_REGEXP).each do |match|
-        _file, name, bin, abi = match
+      string_result = execute_solc(filename)
+      json_result = JSON.parse(string_result)
+      json_result['contracts'].each do |key, desc|
+        _file, name = key.split(':')
         result[name] = {}
-        result[name]["abi"] = abi
-        result[name]["bin"] = bin
+        result[name]["abi"] = desc['abi'].is_a?(String) ? JSON.parse(desc['abi']) : desc['abi']
+        result[name]["bin"] = desc['bin']
       end
       result
+    end
+    
+    def compile_arguments
+      combine_json = %w(bin abi)
+
+      "--optimize --combined-json #{combine_json.join(',')}"
     end
 
     private
       def execute_solc(filename)
-        cmd = "#{@bin_path} #{@args} '#{filename}'"
+        cmd = "#{@bin_path} #{compile_arguments} '#{filename}'"
         out, stderr, status = Open3.capture3(cmd)
         raise SystemCallError, "Unanable to run solc compliers" if status.exitstatus == 127
         raise CompilationError, stderr unless status.exitstatus == 0
