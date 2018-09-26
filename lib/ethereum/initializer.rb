@@ -13,7 +13,9 @@ module Ethereum
         abi = sol_output[contract]["abi"]
         name = contract
         code = sol_output[contract]["bin"]
-        @contracts << Contract.new(name, code, abi, @client)
+        c = Contract.new(name, code, abi, @client)
+        c.srcmap_runtime = sol_output[contract]["srcmap-runtime"]
+        @contracts << c
       end
     end
 

@@ -24,12 +24,40 @@ module Ethereum
         result[name] = {}
         result[name]["abi"] = desc['abi'].is_a?(String) ? JSON.parse(desc['abi']) : desc['abi']
         result[name]["bin"] = desc['bin']
+        result[name]["bin-runtime"] = desc['bin-runtime']
+        result[name]["srcmap-runtime"] = desc['srcmap-runtime']
       end
       result
     end
-    
+
+    class << self
+      def option_srcmap_runtime
+        @option_srcmap_runtime ||= false
+      end
+
+      def option_srcmap_runtime=(value)
+        @option_srcmap_runtime = value
+      end
+
+      def option_bin_runtime
+        @option_bin_runtime ||= false
+      end
+
+      def option_bin_runtime=(value)
+        @option_bin_runtime = value
+      end
+    end
+
+    [:option_srcmap_runtime, :option_bin_runtime].each do |m|
+      define_method m do
+        self.class.public_send(m)
+      end
+    end
+
     def compile_arguments
       combine_json = %w(bin abi)
+      combine_json << 'srcmap-runtime' if option_srcmap_runtime
+      combine_json << 'bin-runtime' if option_bin_runtime
 
       "--optimize --combined-json #{combine_json.join(',')}"
     end
