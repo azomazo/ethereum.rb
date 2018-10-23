@@ -34,7 +34,7 @@ module Ethereum
 
       decoder = Ethereum::Decoder.new
 
-      result = Hash[inputs.map{|i| [i.name, nil]}]
+      result = Hash[inputs_desc.map{|i| [i.name, nil]}]
 
       inputs_indexed.each_with_index do |i, index|
         args = decoder.decode_arguments([i], event_log['topics'][index + 1])
@@ -45,7 +45,7 @@ module Ethereum
         result[inputs_not_indexed[index].name] = v
       end
 
-      result.map! do |k, v|
+      result.map do |k, v|
         r = { name: k,
               value: v,
               type: inputs_desc.find{|i| i.name == k}.type }
