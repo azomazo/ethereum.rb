@@ -3,6 +3,8 @@ require 'forwardable'
 module Ethereum
   class Contract
 
+     ExecCallError = Class.new(StandardError)
+
     attr_reader :address
     attr_accessor :key
     attr_accessor :gas_limit, :gas_price, :nonce
@@ -172,8 +174,15 @@ module Ethereum
 
     def call_raw(fun, *args)
       raw_result = @client.eth_call(call_args(fun, args))["result"]
-      output = @decoder.decode_arguments(fun.outputs, raw_result)
-      return {data: call_payload(fun, args), raw: raw_result, formatted: output}
+      if raw_result.start_with?('0x08c379a0')
+        error = @decoder.decode_string(raw_result.sub('0x08c379a0', ''))
+        fail ExecCallError, "Call return error: #{error}"
+      elsif raw_result == '0x'
+        fail ExecCallError, "Fatal error when call method"
+      else
+        output = @decoder.decode_arguments(fun.outputs, raw_result)
+        return {data: call_payload(fun, args), raw: raw_result, formatted: output}
+      end
     end
 
     def call(fun, *args)
